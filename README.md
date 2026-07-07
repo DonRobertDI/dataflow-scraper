@@ -179,7 +179,7 @@ API_URL=http://localhost:8000
 Computer Science student passionate about full-stack development, AI, automation, and building real-world software solutions.
 
 LinkedIn:
-(Add your LinkedIn URL)
+https://www.linkedin.com/in/donrobertdimasayao/
 
 GitHub:
 https://github.com/YOUR_USERNAME
