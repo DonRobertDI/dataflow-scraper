@@ -1,0 +1,55 @@
+# ===========================
+# Dependencies
+# ===========================
+node_modules/
+**/node_modules/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Build Output
+dist/
+build/
+coverage/
+
+# Vite
+.vite/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# JetBrains
+.idea/
+
+# Temporary Files
+*.tmp
+*.swp
+*.swo
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+
+# Docker
+docker-data/
