@@ -163,7 +163,7 @@ const DashboardView = ({ toast, onExtractionComplete, viewJob, onClearViewedJob 
 
     return (
         <>
-            <section className="animate-fade-in-up rounded-2xl border border-border bg-card p-6 shadow-sm shadow-slate-200/60 sm:p-9">
+            <section className="animate-fade-in-up rounded-2xl border border-border bg-card p-6 shadow-sm shadow-theme sm:p-9">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
                     <Sparkles className="h-3.5 w-3.5" /> Standards-based extraction
                 </span>

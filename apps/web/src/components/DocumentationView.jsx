@@ -40,7 +40,7 @@ const faqs = [
 ];
 
 const Section = ({ icon: Icon, title, children }) => (
-    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm shadow-slate-200/60 sm:p-7">
+    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm shadow-theme sm:p-7">
         <div className="mb-4 flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
                 <Icon className="h-5 w-5" strokeWidth={2} />

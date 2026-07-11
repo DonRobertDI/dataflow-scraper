@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Boxes, LayoutDashboard, History, BookOpen, HardDrive, Menu, X } from 'lucide-react';
+import { Boxes, LayoutDashboard, History, BookOpen, HardDrive, Menu, Moon, Sun, X } from 'lucide-react';
+import { useTheme } from '@/hooks/use-theme';
 
 const navLinks = [
     { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -11,7 +12,7 @@ const Badge = ({ children, tone = 'muted' }) => {
     const tones = {
         muted: 'bg-secondary text-muted-foreground',
         primary: 'bg-primary text-primary-foreground',
-        dot: 'bg-emerald-500 text-white',
+        dot: 'bg-success text-primary-foreground',
     };
     return (
         <span
@@ -24,6 +25,7 @@ const Badge = ({ children, tone = 'muted' }) => {
 
 const Header = ({ view, onNavigate, historyCount = 0 }) => {
     const [mobileOpen, setMobileOpen] = useState(false);
+    const { theme, toggleTheme } = useTheme();
 
     const renderBadge = (key) => {
         if (key === 'history' && historyCount > 0) {
@@ -73,6 +75,20 @@ const Header = ({ view, onNavigate, historyCount = 0 }) => {
                     <span className="hidden items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-3 py-1.5 text-xs font-medium text-muted-foreground sm:inline-flex">
                         <HardDrive className="h-3.5 w-3.5" /> Local history
                     </span>
+
+                    <button
+                        type="button"
+                        onClick={toggleTheme}
+                        aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card/70 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    >
+                        {theme === 'dark' ? (
+                            <Sun className="h-4 w-4" aria-hidden="true" />
+                        ) : (
+                            <Moon className="h-4 w-4" aria-hidden="true" />
+                        )}
+                    </button>
 
                     <button
                         className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary md:hidden"

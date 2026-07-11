@@ -23,7 +23,7 @@ const StatusPill = ({ status }) => {
     return (
         <span
             className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                success ? 'bg-emerald-50 text-emerald-700' : 'bg-destructive/10 text-destructive'
+                success ? 'bg-success-surface text-success' : 'bg-destructive/10 text-destructive'
             }`}
         >
             {success ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
@@ -106,7 +106,7 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
 
     if (history.length === 0) {
         return (
-            <section className="animate-fade-in-up rounded-2xl border border-border bg-card px-6 py-20 text-center shadow-sm shadow-slate-200/60">
+            <section className="animate-fade-in-up rounded-2xl border border-border bg-card px-6 py-20 text-center shadow-sm shadow-theme">
                 <span className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-secondary text-muted-foreground">
                     <Inbox className="h-10 w-10" strokeWidth={1.6} />
                 </span>
@@ -120,7 +120,7 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
     }
 
     return (
-        <section className="animate-fade-in-up rounded-2xl border border-border bg-card shadow-sm shadow-slate-200/60">
+        <section className="animate-fade-in-up rounded-2xl border border-border bg-card shadow-sm shadow-theme">
             <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 className="text-base font-semibold text-foreground">Extraction History</h2>

@@ -82,7 +82,7 @@ const ResultsPanel = ({ status, rows, sourceUrl, warnings = [], error, onExport 
 
     return (
         <section
-            className="animate-fade-in-up rounded-2xl border border-border bg-card shadow-sm shadow-slate-200/60"
+            className="animate-fade-in-up rounded-2xl border border-border bg-card shadow-sm shadow-theme"
             aria-live="polite"
             aria-busy={status === 'loading'}
         >
@@ -91,7 +91,7 @@ const ResultsPanel = ({ status, rows, sourceUrl, warnings = [], error, onExport 
                     <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
                         Extracted Products
                         {hasData && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-success-surface px-2 py-0.5 text-xs font-medium text-success">
                                 <CheckCircle2 className="h-3.5 w-3.5" /> {rows.length} {rows.length === 1 ? 'item' : 'items'}
                             </span>
                         )}
@@ -158,7 +158,7 @@ const ResultsPanel = ({ status, rows, sourceUrl, warnings = [], error, onExport 
             {(status === 'loading' || hasData) && (
                 <>
                     {hasData && warnings.length > 0 && (
-                        <div className="flex gap-2 border-b border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-900" role="alert">
+                        <div className="flex gap-2 border-b border-warning-border bg-warning-surface px-5 py-3 text-sm text-warning" role="alert">
                             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                             <ul className="list-disc space-y-0.5 pl-4">
                                 {warnings.map((warning, index) => <li key={`${warning}-${index}`}>{warning}</li>)}

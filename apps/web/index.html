@@ -7,8 +7,21 @@
 			name="description"
 			content="DataFlow internal e-commerce product extraction workspace"
 		/>
+		<script>
+			(function () {
+				var theme = 'light';
+				try {
+					theme = localStorage.getItem('dataflow-theme') ||
+						(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+				} catch (error) {
+					theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+				}
+				document.documentElement.classList.toggle('dark', theme === 'dark');
+				document.documentElement.style.colorScheme = theme;
+			})();
+		</script>
 
-		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="icon" type="image/png" href="/apps/web/public/favicon.png" />
 
 		<title>DataFlow | Product Extraction</title>
 	</head>
