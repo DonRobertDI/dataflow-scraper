@@ -4,10 +4,15 @@
 	"private": true,
 	"scripts": {
 		"setup": "npm install",
-		"dev": "concurrently --kill-others --raw \"npm run dev --prefix apps/web\"",
-		"build": "concurrently --raw \"npm run build --prefix apps/web\"",
-		"start": "concurrently --kill-others --raw",
-		"lint": "concurrently --raw \"npm run lint --prefix apps/web\""
+		"dev": "concurrently --kill-others --raw \"npm run dev:api\" \"npm run dev:web\"",
+		"dev:api": "python backend/run_api.py",
+		"dev:web": "npm run dev --prefix apps/web",
+		"build": "npm run build --prefix apps/web",
+		"test": "npm run test:backend && npm run test:web",
+		"test:backend": "python -m unittest discover -s backend -p \"test_*.py\" -v",
+		"test:web": "npm run test --prefix apps/web",
+		"start": "concurrently --kill-others --raw \"python backend/run_api.py\" \"npm run start --prefix apps/web\"",
+		"lint": "npm run lint --prefix apps/web"
 	},
 	"devDependencies": {
 		"@types/node": "^26.1.0",

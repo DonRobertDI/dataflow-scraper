@@ -1,28 +1,57 @@
-version: "3.8"
 services:
   backend:
     build: ./backend
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      MAX_CONCURRENT_SCRAPES: 3
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./backend:/app:ro
+    tmpfs:
+      - /tmp:size=512m
+      - /home/appuser:size=64m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build: ./apps/web
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      VITE_API_BASE_URL: ""
+      VITE_API_PROXY_TARGET: http://backend:8000
     ports:
       - "3000:3000"
     volumes:
-      - ./apps/web:/app
+      - ./apps/web:/app:ro
       - /app/node_modules
+    tmpfs:
+      - /tmp:size=64m
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   db:
     image: postgres:15
+    profiles: ["database"]
     env_file: .env
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_for_local_only}
       POSTGRES_DB: dataflow_db
     ports:
       - "5432:5432"

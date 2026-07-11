@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Search,
     Eye,
@@ -16,10 +16,10 @@ import { Button } from './ui/button';
 import { exportCsv, exportPdf, formatDateTime } from '@/lib/dataflow';
 
 const PAGE_SIZE = 10;
-const FILTERS = ['All', 'Success', 'Failed'];
+const FILTERS = ['All', 'success', 'failed'];
 
 const StatusPill = ({ status }) => {
-    const success = status === 'Success';
+    const success = status === 'success';
     return (
         <span
             className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -27,13 +27,14 @@ const StatusPill = ({ status }) => {
             }`}
         >
             {success ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
-            {status}
+            {success ? 'Success' : 'Failed'}
         </span>
     );
 };
 
 const IconAction = ({ label, onClick, disabled, children, tone }) => (
     <button
+        type="button"
         onClick={onClick}
         disabled={disabled}
         title={label}
@@ -55,7 +56,7 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
         let list = [...history].sort((a, b) => b.createdAt - a.createdAt);
         if (filter !== 'All') list = list.filter((r) => r.status === filter);
         const q = query.trim().toLowerCase();
-        if (q) list = list.filter((r) => r.url.toLowerCase().includes(q));
+        if (q) list = list.filter((r) => r.sourceUrl.toLowerCase().includes(q));
         return list;
     }, [history, filter, query]);
 
@@ -63,9 +64,44 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
     const currentPage = Math.min(page, totalPages);
     const pageItems = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
+    useEffect(() => {
+        setPage((value) => Math.min(Math.max(1, value), totalPages));
+    }, [totalPages]);
+
     const handleDelete = (id) => {
-        onDelete(id);
-        toast({ title: 'Entry removed', description: 'The extraction was deleted from your history.' });
+        if (onDelete(id) !== false) {
+            toast({ title: 'Entry removed', description: 'The extraction was deleted from your history.' });
+        }
+    };
+
+    const handleExport = (record, type) => {
+        let completed = false;
+        try {
+            completed =
+                type === 'CSV'
+                    ? exportCsv(record.products, undefined, record.sourceUrl)
+                    : exportPdf(record.products, record.sourceUrl);
+        } catch {
+            completed = false;
+        }
+        if (!completed) {
+            toast({
+                variant: 'destructive',
+                title: `${type} export blocked`,
+                description:
+                    type === 'PDF'
+                        ? 'Allow popups for this site and try again.'
+                    : 'The file could not be created. Please try again.',
+            });
+        } else {
+            toast({
+                title: type === 'CSV' ? 'CSV downloaded' : 'Print-ready report opened',
+                description:
+                    type === 'CSV'
+                        ? 'The complete product data was exported.'
+                        : 'Use the report’s Print / Save as PDF button when you are ready.',
+            });
+        }
     };
 
     if (history.length === 0) {
@@ -76,8 +112,8 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
                 </span>
                 <h2 className="text-lg font-semibold text-foreground">No extraction history yet.</h2>
                 <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-                    Run your first extraction from the Dashboard and every successful job will appear here — ready to
-                    review or export anytime.
+                    Run your first extraction from the Dashboard. Successful results and useful failure details will
+                    appear here for review.
                 </p>
             </section>
         );
@@ -102,13 +138,16 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
                                 setPage(1);
                             }}
                             placeholder="Search by URL"
+                            aria-label="Search extraction history by URL"
                             className="h-9 w-full pl-9 sm:w-56"
                         />
                     </div>
-                    <div className="flex items-center gap-1 rounded-lg bg-secondary p-1">
+                    <div className="flex items-center gap-1 rounded-lg bg-secondary p-1" role="group" aria-label="Filter extraction history">
                         {FILTERS.map((f) => (
                             <button
+                                type="button"
                                 key={f}
+                                aria-pressed={filter === f}
                                 onClick={() => {
                                     setFilter(f);
                                     setPage(1);
@@ -119,7 +158,7 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
-                                {f}
+                                {f === 'All' ? f : `${f[0].toUpperCase()}${f.slice(1)}`}
                             </button>
                         ))}
                     </div>
@@ -128,6 +167,7 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
 
             <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] border-collapse text-sm">
+                    <caption className="sr-only">Saved extraction jobs</caption>
                     <thead>
                         <tr className="bg-secondary/70">
                             <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Website URL</th>
@@ -145,19 +185,26 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
                                     i % 2 === 1 ? 'bg-secondary/30' : 'bg-card'
                                 }`}
                             >
-                                <td className="max-w-[240px] truncate px-5 py-4 font-medium text-foreground">{r.url}</td>
-                                <td className="px-5 py-4 tabular-nums text-muted-foreground">{r.count}</td>
+                                <td className="max-w-[280px] px-5 py-4 font-medium text-foreground">
+                                    <p className="truncate" title={r.sourceUrl}>{r.sourceUrl}</p>
+                                    {r.status === 'failed' && r.error && (
+                                        <p className="mt-1 truncate text-xs font-normal text-destructive" title={r.error}>
+                                            {r.error}
+                                        </p>
+                                    )}
+                                </td>
+                                <td className="px-5 py-4 tabular-nums text-muted-foreground">{r.products.length}</td>
                                 <td className="px-5 py-4 text-muted-foreground">{formatDateTime(r.createdAt)}</td>
                                 <td className="px-5 py-4"><StatusPill status={r.status} /></td>
                                 <td className="px-5 py-4">
                                     <div className="flex items-center justify-end gap-1.5">
-                                        <IconAction label="View results" disabled={r.status !== 'Success'} onClick={() => onView(r)}>
+                                        <IconAction label="View details" onClick={() => onView(r)}>
                                             <Eye className="h-4 w-4" />
                                         </IconAction>
-                                        <IconAction label="Export CSV" disabled={r.status !== 'Success'} onClick={() => exportCsv(r.rows || [])}>
+                                        <IconAction label="Export CSV" disabled={r.status !== 'success'} onClick={() => handleExport(r, 'CSV')}>
                                             <FileSpreadsheet className="h-4 w-4" />
                                         </IconAction>
-                                        <IconAction label="Export PDF" disabled={r.status !== 'Success'} onClick={() => exportPdf(r.rows || [], r.url)}>
+                                        <IconAction label="Print / Save PDF" disabled={r.status !== 'success'} onClick={() => handleExport(r, 'PDF')}>
                                             <FileText className="h-4 w-4" />
                                         </IconAction>
                                         <IconAction label="Delete" tone="danger" onClick={() => handleDelete(r.id)}>
@@ -188,7 +235,7 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
                             size="sm"
                             variant="outline"
                             disabled={currentPage <= 1}
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            onClick={() => setPage(Math.max(1, currentPage - 1))}
                             className="gap-1"
                         >
                             <ChevronLeft className="h-4 w-4" /> Prev
@@ -197,7 +244,7 @@ const HistoryView = ({ history, onDelete, onView, toast }) => {
                             size="sm"
                             variant="outline"
                             disabled={currentPage >= totalPages}
-                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                            onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
                             className="gap-1"
                         >
                             Next <ChevronRight className="h-4 w-4" />

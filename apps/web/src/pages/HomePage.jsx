@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';    
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
@@ -8,18 +7,11 @@ import HistoryView from '@/components/HistoryView';
 import DocumentationView from '@/components/DocumentationView';
 import { loadHistory, addHistoryEntry, deleteHistoryEntry } from '@/lib/dataflow';
 
-const transition = {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 },
-    transition: { duration: 0.25, ease: 'easeOut' },
-};
-
 const HomePage = () => {
     const [view, setView] = useState('dashboard');
     const [history, setHistory] = useState([]);
-    const [dashboardBadge, setDashboardBadge] = useState(false);
     const [viewedJob, setViewedJob] = useState(null);
+    const [dashboardRevision, setDashboardRevision] = useState(0);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -27,20 +19,39 @@ const HomePage = () => {
     }, []);
 
     const handleNavigate = (next) => {
-        if (next === 'dashboard') setDashboardBadge(false);
         setView(next);
     };
 
     const handleExtractionComplete = (entry) => {
-        setHistory(addHistoryEntry(entry));
-        if (entry.status === 'Success') setDashboardBadge(true);
+        const result = addHistoryEntry(entry);
+        setHistory(result.items);
+        if (!result.persisted) {
+            toast({
+                variant: 'destructive',
+                title: 'History was not saved',
+                description: 'Browser storage is unavailable or full. Your extraction result is still usable.',
+            });
+        }
     };
 
-    const handleDelete = (id) => setHistory(deleteHistoryEntry(id));
+    const handleDelete = (id) => {
+        const result = deleteHistoryEntry(id);
+        setHistory(result.items);
+        if (!result.persisted) {
+            toast({
+                variant: 'destructive',
+                title: 'Could not update history',
+                description: 'Browser storage is unavailable. The entry was not removed.',
+            });
+        } else if (viewedJob?.id === id) {
+            setViewedJob(null);
+            setDashboardRevision((revision) => revision + 1);
+        }
+        return result.persisted;
+    };
 
     const handleView = (job) => {
         setViewedJob(job);
-        setDashboardBadge(false);
         setView('dashboard');
     };
 
@@ -50,35 +61,33 @@ const HomePage = () => {
                 view={view}
                 onNavigate={handleNavigate}
                 historyCount={history.length}
-                dashboardBadge={dashboardBadge}
             />
 
             <main className="mx-auto max-w-[64rem] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-                <AnimatePresence mode="wait">
-                    <motion.div key={view} {...transition}>
-                        {view === 'dashboard' && (
-                            <DashboardView
-                                toast={toast}
-                                onExtractionComplete={handleExtractionComplete}
-                                viewJob={viewedJob}
-                                onClearViewedJob={() => setViewedJob(null)}
-                            />
-                        )}
-                        {view === 'history' && (
-                            <HistoryView
-                                history={history}
-                                onDelete={handleDelete}
-                                onView={handleView}
-                                toast={toast}
-                            />
-                        )}
-                        {view === 'documentation' && <DocumentationView />}
-                    </motion.div>
-                </AnimatePresence>
+                <div hidden={view !== 'dashboard'}>
+                    <DashboardView
+                        key={dashboardRevision}
+                        toast={toast}
+                        onExtractionComplete={handleExtractionComplete}
+                        viewJob={viewedJob}
+                        onClearViewedJob={() => setViewedJob(null)}
+                    />
+                </div>
+                <div hidden={view !== 'history'}>
+                    <HistoryView
+                        history={history}
+                        onDelete={handleDelete}
+                        onView={handleView}
+                        toast={toast}
+                    />
+                </div>
+                <div hidden={view !== 'documentation'}>
+                    <DocumentationView />
+                </div>
             </main>
 
             <footer className="mx-auto max-w-[64rem] px-4 py-8 text-center text-xs text-muted-foreground sm:px-6 lg:px-8">
-                DataFlow — E-Commerce Scraper · © {new Date().getFullYear()} DataFlow, Inc.
+                DataFlow — local product research workspace · {new Date().getFullYear()}
             </footer>
 
             <Toaster />

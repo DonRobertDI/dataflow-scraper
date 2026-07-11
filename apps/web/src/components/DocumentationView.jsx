@@ -8,28 +8,34 @@ import {
 } from './ui/accordion';
 
 const supported = [
-    { name: 'Shopify', note: 'Product & collection pages' },
-    { name: 'WooCommerce', note: 'WordPress storefronts' },
-    { name: 'Magento', note: 'Adobe Commerce catalogs' },
-    { name: 'BigCommerce', note: 'Hosted store pages' },
+    { name: 'JSON-LD Product', note: 'Preferred structured source' },
+    { name: 'Open Graph', note: 'Product metadata fallback' },
+    { name: 'Schema markup', note: 'Name and price properties' },
+    { name: 'Generic HTML', note: 'Conservative page fallback' },
+];
+
+const testPages = [
+    { name: 'Web Scraping Product', url: 'https://web-scraping.dev/product/1' },
+    { name: 'Books to Scrape', url: 'https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html' },
+    { name: 'Oxylabs Sandbox', url: 'https://sandbox.oxylabs.io/products/1' },
 ];
 
 const faqs = [
     {
         q: 'What websites are supported?',
-        a: 'DataFlow supports Shopify, WooCommerce, Magento, BigCommerce, and most standard product catalog pages that expose structured product markup.',
+        a: 'DataFlow supports public product-detail pages that expose JSON-LD Product data, product metadata, or recognizable product markup. Catalog, search, login, and bot-challenge pages are intentionally not treated as a single product.',
     },
     {
         q: "Why isn't my URL working?",
-        a: 'Make sure the URL starts with http:// or https:// and points to a public product or catalog page. Pages behind logins, region locks, or heavy bot protection may not be extractable.',
+        a: 'Make sure the URL starts with http:// or https:// and points to one individual public product page. Pages behind logins, region locks, or bot protection may not be extractable.',
     },
     {
         q: 'How long does extraction take?',
-        a: 'Most extractions complete in one to three seconds. Larger catalog pages with many products may take slightly longer.',
+        a: 'Extraction time depends on the source page. Navigation is limited to 30 seconds, and the dashboard allows up to 60 seconds for browser startup, page settling, and normalization.',
     },
     {
         q: 'Can I export unlimited times?',
-        a: 'Yes. Every successful extraction can be exported to CSV or PDF as many times as you like, both from the Dashboard and your History.',
+        a: 'Yes. Download CSV directly, or open a print-ready report and choose Print / Save as PDF. Both options remain available from the Dashboard and History.',
     },
 ];
 
@@ -68,7 +74,7 @@ const DocumentationView = () => (
 
         <Section icon={Rocket} title="Getting Started">
             <div className="space-y-4">
-                <Step icon={ClipboardPaste} title="Paste an e-commerce URL" desc="Copy the address of a product or catalog page and paste it into the input field on the Dashboard." />
+                <Step icon={ClipboardPaste} title="Paste a product-detail URL" desc="Open one public product page, copy its full address, and paste it into the Dashboard." />
                 <Step icon={MousePointerClick} title="Run extraction" desc="Click Extract Data. DataFlow analyzes the page and pulls product names, prices, and more." />
                 <Step icon={FileSpreadsheet} title="Review & export" desc="Inspect the structured results table, then export the data as CSV or PDF." />
             </div>
@@ -98,7 +104,7 @@ const DocumentationView = () => (
                     <FileText className="h-5 w-5 shrink-0 text-primary" />
                     <div>
                         <p className="text-sm font-medium text-foreground">PDF Export</p>
-                        <p className="text-sm text-muted-foreground">Generate a clean, printable report of the extracted products for sharing or archiving.</p>
+                        <p className="text-sm text-muted-foreground">Open a clean report, then use your browser&apos;s Print / Save as PDF option for sharing or archiving.</p>
                     </div>
                 </div>
             </div>
@@ -115,13 +121,31 @@ const DocumentationView = () => (
             </Accordion>
         </Section>
 
-        <Section icon={Activity} title="API Status">
-            <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+        <Section icon={Activity} title="Service Health">
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-secondary/40 px-4 py-3">
+                <Activity className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">
+                    Administrators can verify the extraction service at the backend /health endpoint.
                 </span>
-                <span className="text-sm font-medium text-emerald-700">Extraction Service Online</span>
+            </div>
+            <div className="mt-5 border-t border-border pt-5">
+                <p className="text-sm font-medium text-foreground">Authorized pages for testing</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                    These public sandboxes are designed for scraper practice. Use individual detail links and respect the terms of any other site.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                    {testPages.map((page) => (
+                        <a
+                            key={page.url}
+                            href={page.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-medium text-primary hover:bg-accent"
+                        >
+                            {page.name}
+                        </a>
+                    ))}
+                </div>
             </div>
         </Section>
     </div>

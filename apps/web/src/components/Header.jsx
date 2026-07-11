@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import { Boxes, LayoutDashboard, History, BookOpen, Menu, X } from 'lucide-react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Boxes, LayoutDashboard, History, BookOpen, HardDrive, Menu, X } from 'lucide-react';
 
 const navLinks = [
     { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -31,15 +22,12 @@ const Badge = ({ children, tone = 'muted' }) => {
     );
 };
 
-const Header = ({ view, onNavigate, historyCount = 0, dashboardBadge = false }) => {
+const Header = ({ view, onNavigate, historyCount = 0 }) => {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const renderBadge = (key) => {
         if (key === 'history' && historyCount > 0) {
             return <Badge tone={view === 'history' ? 'primary' : 'muted'}>{historyCount}</Badge>;
-        }
-        if (key === 'dashboard' && dashboardBadge) {
-            return <span className="ml-1 h-2 w-2 rounded-full bg-emerald-500" aria-hidden />;
         }
         return null;
     };
@@ -52,7 +40,7 @@ const Header = ({ view, onNavigate, historyCount = 0, dashboardBadge = false }) 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/80 backdrop-blur-md">
             <div className="mx-auto flex h-16 max-w-[80rem] items-center justify-between px-4 sm:px-6 lg:px-8">
-                <button onClick={() => go('dashboard')} className="flex items-center gap-2.5">
+                <button onClick={() => go('dashboard')} className="flex items-center gap-2.5" aria-label="Open dashboard">
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shadow-primary/30">
                         <Boxes className="h-5 w-5" strokeWidth={2.2} />
                     </span>
@@ -66,6 +54,7 @@ const Header = ({ view, onNavigate, historyCount = 0, dashboardBadge = false }) 
                             <button
                                 key={key}
                                 onClick={() => go(key)}
+                                aria-current={active ? 'page' : undefined}
                                 className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-200 ${
                                     active
                                         ? 'bg-accent text-accent-foreground'
@@ -81,34 +70,16 @@ const Header = ({ view, onNavigate, historyCount = 0, dashboardBadge = false }) 
                 </nav>
 
                 <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger className="rounded-full outline-none ring-offset-background transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                            <Avatar className="h-9 w-9 border border-border">
-                                <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
-                                    AM
-                                </AvatarFallback>
-                            </Avatar>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel className="flex flex-col">
-                                <span className="text-sm font-semibold text-foreground">Alex Morgan</span>
-                                <span className="text-xs font-normal text-muted-foreground">alex@dataflow.io</span>
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>Account settings</DropdownMenuItem>
-                            <DropdownMenuItem>API keys</DropdownMenuItem>
-                            <DropdownMenuItem>Billing</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                Sign out
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <span className="hidden items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-3 py-1.5 text-xs font-medium text-muted-foreground sm:inline-flex">
+                        <HardDrive className="h-3.5 w-3.5" /> Local history
+                    </span>
 
                     <button
                         className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary md:hidden"
                         onClick={() => setMobileOpen((v) => !v)}
                         aria-label="Toggle navigation"
+                        aria-expanded={mobileOpen}
+                        aria-controls="mobile-navigation"
                     >
                         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                     </button>
@@ -116,13 +87,14 @@ const Header = ({ view, onNavigate, historyCount = 0, dashboardBadge = false }) 
             </div>
 
             {mobileOpen && (
-                <nav className="border-t border-border/70 bg-background px-4 py-3 md:hidden">
+                <nav id="mobile-navigation" className="border-t border-border/70 bg-background px-4 py-3 md:hidden">
                     {navLinks.map(({ key, label, icon: Icon }) => {
                         const active = view === key;
                         return (
                             <button
                                 key={key}
                                 onClick={() => go(key)}
+                                aria-current={active ? 'page' : undefined}
                                 className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                                     active
                                         ? 'bg-accent text-accent-foreground'
